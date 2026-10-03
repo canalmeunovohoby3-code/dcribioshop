@@ -25,6 +25,16 @@ export default function useAuth() {
     }
   }, [])
 
+  useEffect(() => {
+    // Marca este dispositivo como "admin" para não contar as visitas do próprio
+    // administrador nas métricas do site.
+    try {
+      if (session) localStorage.setItem('dcribioshop-admin', '1')
+    } catch {
+      /* ignore */
+    }
+  }, [session])
+
   const signOut = async () => {
     if (supabase) await supabase.auth.signOut()
   }

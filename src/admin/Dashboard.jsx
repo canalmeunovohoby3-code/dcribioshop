@@ -135,9 +135,15 @@ export default function Dashboard() {
   const clearMetrics = async () => {
     if (!isSupabaseConfigured || !supabase) return
     if (!window.confirm('Apagar TODAS as métricas registradas? Esta ação não pode ser desfeita.')) return
-    const { error: err } = await supabase.from('events').delete().gte('id', 0)
+    const { data, error: err } = await supabase.from('events').delete().gte('id', 0).select('id')
     if (err) {
       setError(err.message)
+      return
+    }
+    if (!data || data.length === 0) {
+      setError(
+        'Nada foi apagado — falta a permissão de exclusão no Supabase. Rode supabase/migrations/0003_events_delete.sql no SQL Editor e tente de novo.',
+      )
       return
     }
     setError('')

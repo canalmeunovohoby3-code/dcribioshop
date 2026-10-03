@@ -66,8 +66,18 @@ function baseEvent(eventType, payload = {}) {
   }
 }
 
+function isAdminDevice() {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem('dcribioshop-admin') === '1'
+  } catch {
+    return false
+  }
+}
+
 export function track(eventType, payload = {}) {
   if (!isSupabaseConfigured || !supabase) return
+  // Não conta acessos do próprio admin (evita métricas "fantasma" após relogar/limpar).
+  if (isAdminDevice()) return
   try {
     supabase
       .from('events')
@@ -83,6 +93,7 @@ export function track(eventType, payload = {}) {
 
 export function trackMany(rows) {
   if (!isSupabaseConfigured || !supabase || !rows.length) return
+  if (isAdminDevice()) return
   try {
     supabase
       .from('events')

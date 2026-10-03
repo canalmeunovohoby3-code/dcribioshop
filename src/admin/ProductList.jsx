@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isSupabaseConfigured, supabase } from '../lib/supabase.js'
 import { PRODUCTS } from '../data.js'
+import { slugify } from '../lib/slug.js'
 import { pushUndo } from './undo.js'
 import './admin.css'
 
@@ -20,6 +21,7 @@ export default function ProductList() {
   const [category, setCategory] = useState('')
   const [tab, setTab] = useState('')
   const [busy, setBusy] = useState(null)
+  const [importing, setImporting] = useState(false)
 
   const load = async () => {
     if (!isSupabaseConfigured || !supabase) {
@@ -99,6 +101,33 @@ export default function ProductList() {
     }, `Produto "${product.name}" excluído.`)
   }
 
+  const importStatic = async () => {
+    if (!isSupabaseConfigured || !supabase) return
+    if (!window.confirm('Importar os produtos que já estão no site para o banco? Produtos com o mesmo identificador não são duplicados.')) return
+    setImporting(true)
+    setError('')
+    const rows = PRODUCTS.map((product, index) => ({
+      slug: slugify(product.name, product.image),
+      name: product.name,
+      description: null,
+      image: product.image,
+      images: [product.image],
+      category: product.group,
+      tab: product.tab,
+      published: true,
+      sort_order: index,
+    }))
+    const { error: err } = await supabase
+      .from('products')
+      .upsert(rows, { onConflict: 'slug', ignoreDuplicates: true })
+    setImporting(false)
+    if (err) {
+      setError(err.message)
+      return
+    }
+    await load()
+  }
+
   return (
     <>
       <div className="admin-page-head">
@@ -106,12 +135,24 @@ export default function ProductList() {
           <h1>Produtos</h1>
           <p>{products.length} produtos na base. As alterações aparecem no site automaticamente.</p>
         </div>
-        <Link className="btn btn-primary" to="/admin/produtos/novo">
-          + Novo produto
-        </Link>
+        <div className="admin-row-actions">
+          <button className="btn" type="button" onClick={importStatic} disabled={importing}>
+            {importing ? 'Importando…' : 'Importar produtos do site'}
+          </button>
+          <Link className="btn btn-primary" to="/admin/produtos/novo">
+            + Novo produto
+          </Link>
+        </div>
       </div>
 
       {error && <div className="admin-alert error">{error}</div>}
+
+      {!loading && !error && products.length === 0 && (
+        <div className="admin-alert info">
+          Nenhum produto no banco ainda. Clique em <strong>“Importar produtos do site”</strong> para trazer os produtos
+          que já estão publicados no site (não cria duplicados).
+        </div>
+      )}
 
       <div className="admin-panel">
         <div className="admin-filters" style={{ marginBottom: 16 }}>
@@ -143,61 +184,96 @@ export default function ProductList() {
         {loading ? (
           <p style={{ color: 'var(--muted-foreground)' }}>Carregando…</p>
         ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Imagem</th>
-                  <th>Nome</th>
-                  <th>Categoria</th>
-                  <th>Aba</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((product) => (
-                  <tr key={product.id}>
-                    <td>
-                      {product.image ? <img src={product.image} alt="" /> : <span className="admin-badge">sem foto</span>}
-                    </td>
-                    <td>{product.name}</td>
-                    <td>{product.category}</td>
-                    <td>{TABS.find(([key]) => key === product.tab)?.[1] || product.tab}</td>
-                    <td>
-                      <span className={`admin-badge${product.published ? ' on' : ''}`}>
-                        {product.published ? 'Publicado' : 'Rascunho'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="admin-row-actions">
-                        <Link className="btn btn-ghost" to={`/admin/produtos/${product.id}`}>
-                          Editar
-                        </Link>
-                        <button className="btn btn-ghost" onClick={() => togglePublish(product)} disabled={busy === product.id}>
-                          {product.published ? 'Despublicar' : 'Publicar'}
-                        </button>
-                        <button className="btn btn-danger" onClick={() => remove(product)} disabled={busy === product.id}>
-                          Excluir
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && (
+          <>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
                   <tr>
-                    <td colSpan={6} style={{ color: 'var(--muted-foreground)' }}>
-                      {products.length === 0
-                        ? 'Nenhum produto cadastrado. Rode o SQL de seed (0002) ou crie um novo produto.'
-                        : tab === 'maquinas'
-                          ? 'Nenhum produto cadastrado na aba "Máquinas e Equipamentos". No site esta aba mostra a galeria de máquinas adesivadas; se você criar um produto com esta aba, ele também aparece lá.'
-                          : 'Nenhum produto encontrado com os filtros atuais.'}
-                    </td>
+                    <th>Imagem</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Aba</th>
+                    <th>Status</th>
+                    <th>Ações</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((product) => (
+                    <tr key={product.id}>
+                      <td>
+                        {product.image ? <img src={product.image} alt="" /> : <span className="admin-badge">sem foto</span>}
+                      </td>
+                      <td>{product.name}</td>
+                      <td>{product.category}</td>
+                      <td>{TABS.find(([key]) => key === product.tab)?.[1] || product.tab}</td>
+                      <td>
+                        <span className={`admin-badge${product.published ? ' on' : ''}`}>
+                          {product.published ? 'Publicado' : 'Rascunho'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="admin-row-actions">
+                          <Link className="btn btn-ghost" to={`/admin/produtos/${product.id}`}>
+                            Editar
+                          </Link>
+                          <button className="btn btn-ghost" onClick={() => togglePublish(product)} disabled={busy === product.id}>
+                            {product.published ? 'Despublicar' : 'Publicar'}
+                          </button>
+                          <button className="btn btn-danger" onClick={() => remove(product)} disabled={busy === product.id}>
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ color: 'var(--muted-foreground)' }}>
+                        {products.length === 0
+                          ? 'Nenhum produto cadastrado. Clique em "Importar produtos do site" ou crie um novo.'
+                          : tab === 'maquinas'
+                            ? 'Nenhum produto nesta aba. No site esta aba mostra a galeria de máquinas adesivadas; se você criar um produto com esta aba, ele também aparece lá.'
+                            : 'Nenhum produto encontrado com os filtros atuais.'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="admin-prodlist">
+              {filtered.map((product) => (
+                <div className="admin-prodlist-card" key={product.id}>
+                  {product.image ? <img src={product.image} alt="" /> : <span className="admin-badge">sem foto</span>}
+                  <div className="admin-prodlist-info">
+                    <strong>{product.name}</strong>
+                    <span>{product.category}</span>
+                    <span className={`admin-badge${product.published ? ' on' : ''}`}>
+                      {product.published ? 'Publicado' : 'Rascunho'}
+                    </span>
+                  </div>
+                  <div className="admin-row-actions">
+                    <Link className="btn btn-ghost" to={`/admin/produtos/${product.id}`}>
+                      Editar
+                    </Link>
+                    <button className="btn btn-ghost" onClick={() => togglePublish(product)} disabled={busy === product.id}>
+                      {product.published ? 'Despublicar' : 'Publicar'}
+                    </button>
+                    <button className="btn btn-danger" onClick={() => remove(product)} disabled={busy === product.id}>
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {filtered.length === 0 && (
+                <p style={{ color: 'var(--muted-foreground)' }}>
+                  {products.length === 0
+                    ? 'Nenhum produto cadastrado. Clique em "Importar produtos do site" ou crie um novo.'
+                    : 'Nenhum produto encontrado com os filtros atuais.'}
+                </p>
+              )}
+            </div>
+          </>
         )}
       </div>
     </>

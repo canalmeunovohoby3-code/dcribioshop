@@ -512,3 +512,55 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Lista de produtos em cards (mobile), no lugar da tabela larga */
+.admin-prodlist {
+  display: none;
+}
+
+.admin-prodlist-card {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--background);
+}
+
+.admin-prodlist-card > img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.admin-prodlist-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-prodlist-info strong {
+  font-size: 0.86rem;
+}
+
+.admin-prodlist-info span {
+  color: var(--muted-foreground);
+  font-size: 0.74rem;
+}
+
+.admin-prodlist-card .admin-row-actions {
+  grid-column: 1 / -1;
+}
+
+@media (width<=700px) {
+  .admin-table-wrap {
+    display: none;
+  }
+  .admin-prodlist {
+    display: grid;
+    gap: 12px;
+  }
+}
