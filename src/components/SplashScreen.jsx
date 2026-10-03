@@ -6,11 +6,6 @@ const LOGO_MS = 3000
 const PAUSE_MS = 850
 const EXIT_MS = 650
 const HOLD_MS = LOGO_MS + PAUSE_MS
-const REDUCED_HOLD_MS = 650
-const REDUCED_EXIT_MS = 300
-
-const FORCE_FULL =
-  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('intro')
 
 export default function SplashScreen({ onReveal }) {
   const [leaving, setLeaving] = useState(false)
@@ -19,27 +14,17 @@ export default function SplashScreen({ onReveal }) {
   onRevealRef.current = onReveal
 
   useEffect(() => {
-    const prefersReduced =
-      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        : false
-
-    const reduced = prefersReduced && !FORCE_FULL
-    const hold = reduced ? REDUCED_HOLD_MS : HOLD_MS
-    const exit = reduced ? REDUCED_EXIT_MS : EXIT_MS
-    const total = hold + exit
-
     document.body.style.overflow = 'hidden'
 
     const leaveTimer = window.setTimeout(() => {
       setLeaving(true)
       onRevealRef.current?.()
-    }, hold)
+    }, HOLD_MS)
 
     const doneTimer = window.setTimeout(() => {
       setHidden(true)
       document.body.style.overflow = ''
-    }, total)
+    }, HOLD_MS + EXIT_MS)
 
     return () => {
       window.clearTimeout(leaveTimer)
@@ -51,11 +36,7 @@ export default function SplashScreen({ onReveal }) {
   if (hidden) return null
 
   return (
-    <div
-      className={`splash${leaving ? ' splash--leaving' : ''}${FORCE_FULL ? ' splash--full' : ''}`}
-      role="presentation"
-      aria-hidden="true"
-    >
+    <div className={`splash${leaving ? ' splash--leaving' : ''}`} role="presentation" aria-hidden="true">
       <div className="splash__stage">
         <span className="splash__glow" />
         <img className="splash__logo" src={LOGO} alt="Dcribioshop" />

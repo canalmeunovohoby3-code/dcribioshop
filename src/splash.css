@@ -177,23 +177,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .splash__glow {
-    animation: none;
-    opacity: 0;
-  }
-  .splash__shine {
-    display: none;
-  }
-  .splash__logo {
-    animation: splash-logo-reduced 0.5s ease both;
-  }
-  .splash--leaving {
-    transition-duration: 0.3s;
-  }
-  .splash--leaving .splash__stage {
-    transform: none;
-    transition: none;
-  }
   .app-shell--ready {
     transition-duration: 0.2s;
   }
@@ -208,26 +191,3 @@
   }
 }
 
-/* Forçar a introdução completa (ex.: abrir com ?intro=1), mesmo com reduced-motion */
-.splash--full .splash__glow {
-  animation: splash-glow 3s linear both;
-  opacity: 0;
-}
-
-.splash--full .splash__shine {
-  display: block;
-  animation: splash-shine 0.85s ease-in-out 2.75s both;
-}
-
-.splash--full .splash__logo {
-  animation: splash-logo 3s linear both;
-}
-
-.splash--full.splash--leaving {
-  transition-duration: 0.65s;
-}
-
-.splash--full.splash--leaving .splash__stage {
-  transform: scale(0.9);
-  transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
-}
