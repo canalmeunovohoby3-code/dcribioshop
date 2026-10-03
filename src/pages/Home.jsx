@@ -55,6 +55,8 @@ const PAYMENTS = [
   ['/payment/elo.svg', 'Elo'],
   ['/payment/amex.svg', 'American Express'],
   ['/payment/hipercard.svg', 'Hipercard'],
+  ['/payment/boleto.svg', 'Boleto'],
+  ['/payment/pix.svg', 'Pix'],
 ]
 
 export default function Home() {
