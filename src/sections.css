@@ -1,0 +1,108 @@
+/* Adições cirúrgicas: bandeiras de pagamento, mapa e alinhamento do Sobre Nós */
+
+/* Formas de pagamento (discreto, dentro do rodapé) */
+.payment-methods {
+  align-items: center;
+  gap: 14px 22px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 18px 0;
+  display: flex;
+}
+
+.payment-methods > span {
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.payment-methods ul {
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-wrap: wrap;
+  display: flex;
+}
+
+.payment-methods li {
+  display: flex;
+}
+
+.payment-methods img {
+  width: auto;
+  height: 30px;
+  border-radius: 5px;
+  display: block;
+}
+
+/* Mapa da loja */
+.store-map {
+  margin-top: 8px;
+  margin-bottom: 56px;
+}
+
+.map-frame {
+  aspect-ratio: 16 / 7;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 20px 60px -22px oklch(55% 0.24 27 / 0.45);
+  overflow: hidden;
+}
+
+.map-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.map-address {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  margin: 14px 0 0;
+  text-align: center;
+  display: flex;
+}
+
+.map-address svg {
+  color: var(--accent);
+  flex: none;
+}
+
+/* Sobre Nós + vídeo: centraliza o texto em relação ao vídeo e sobe a seção */
+.about-teaser {
+  align-items: center;
+  margin-top: 30px;
+}
+
+.about-teaser > * {
+  align-self: center;
+}
+
+@media (width<=800px) {
+  .payment-methods {
+    justify-content: center;
+  }
+  .payment-methods > span {
+    width: 100%;
+    text-align: center;
+  }
+  .payment-methods img {
+    height: 26px;
+  }
+  .map-frame {
+    aspect-ratio: 4 / 3;
+  }
+  .store-map {
+    margin-bottom: 44px;
+  }
+}

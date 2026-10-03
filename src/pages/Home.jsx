@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { Instagram } from '../components/icons.jsx'
+import '../sections.css'
 import Brand from '../components/Brand.jsx'
 import ActionButton from '../components/ActionButton.jsx'
 import CartButton from '../components/CartButton.jsx'
@@ -45,6 +46,15 @@ const TABS = [
   ['maquinas', 'Máquinas e Equipamentos'],
 ]
 const BENEFIT_ICONS = { truck: Truck, 'pen-tool': PenTool, headphones: Headphones }
+
+const MAP_SRC = `https://www.google.com/maps?q=${encodeURIComponent(SITE.address)}&z=16&output=embed`
+const PAYMENTS = [
+  ['/payment/visa.svg', 'Visa'],
+  ['/payment/mastercard.svg', 'Mastercard'],
+  ['/payment/elo.svg', 'Elo'],
+  ['/payment/amex.svg', 'American Express'],
+  ['/payment/hipercard.svg', 'Hipercard'],
+]
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -389,6 +399,28 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="store-map wrap" aria-label="Localização da Dcribioshop no Google Maps">
+        <div className="section-title">
+          <h2>
+            ONDE <em>ESTAMOS</em>
+          </h2>
+          <span />
+        </div>
+        <div className="map-frame">
+          <iframe
+            title={`Localização da ${SITE.name} no Google Maps`}
+            src={MAP_SRC}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+        </div>
+        <p className="map-address">
+          <MapPin size={15} />
+          {SITE.address}
+        </p>
+      </section>
+
       <footer id="contato">
         <div className="footer-accent" />
         <div className="wrap contact-row">
@@ -474,6 +506,16 @@ export default function Home() {
               <span>{SITE.instagram}</span>
             </a>
           </div>
+        </div>
+        <div className="wrap payment-methods">
+          <span>Formas de pagamento</span>
+          <ul>
+            {PAYMENTS.map(([src, alt]) => (
+              <li key={alt}>
+                <img src={src} alt={alt} width={780} height={500} loading="lazy" />
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="wrap footer-keywords">
           <p>
