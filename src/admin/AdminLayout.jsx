@@ -1,6 +1,7 @@
 import { Link, NavLink } from 'react-router-dom'
 import { LOGO } from '../data.js'
 import useAuth from './useAuth.js'
+import UndoToast from './UndoToast.jsx'
 import './admin.css'
 
 export default function AdminLayout({ children }) {
@@ -33,6 +34,7 @@ export default function AdminLayout({ children }) {
         </div>
       </div>
       <div className="admin-wrap">{children}</div>
+      <UndoToast />
     </div>
   )
 }

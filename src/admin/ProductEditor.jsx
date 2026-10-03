@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { isSupabaseConfigured, supabase } from '../lib/supabase.js'
 import { PRODUCTS } from '../data.js'
 import { slugify } from '../lib/slug.js'
+import { pushUndo } from './undo.js'
 import './admin.css'
 
 const CATEGORIES = Array.from(new Set(PRODUCTS.map((product) => product.group))).sort()
@@ -29,6 +30,7 @@ export default function ProductEditor() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
+  const [previousRow, setPreviousRow] = useState(null)
 
   useEffect(() => {
     if (isNew || !isSupabaseConfigured || !supabase) return
@@ -44,6 +46,7 @@ export default function ProductEditor() {
         if (err) {
           setError(err.message)
         } else if (data) {
+          setPreviousRow(data)
           setName(data.name || '')
           setDescription(data.description || '')
           setCategory(data.category || CATEGORIES[0] || '')
@@ -127,17 +130,28 @@ export default function ProductEditor() {
         .limit(1)
         .maybeSingle()
       const sortOrder = (maxRow?.sort_order ?? -1) + 1
-      let { error: err } = await supabase.from('products').insert({ ...payload, slug: baseSlug, sort_order: sortOrder })
-      if (err && err.code === '23505') {
-        const retry = await supabase
+      let result = await supabase
+        .from('products')
+        .insert({ ...payload, slug: baseSlug, sort_order: sortOrder })
+        .select('id')
+        .single()
+      if (result.error && result.error.code === '23505') {
+        result = await supabase
           .from('products')
           .insert({ ...payload, slug: `${baseSlug}-${Date.now().toString(36)}`, sort_order: sortOrder })
-        err = retry.error
+          .select('id')
+          .single()
       }
       setSaving(false)
-      if (err) {
-        setError(err.message)
+      if (result.error) {
+        setError(result.error.message)
         return
+      }
+      const newId = result.data?.id
+      if (newId) {
+        pushUndo(async () => {
+          await supabase.from('products').delete().eq('id', newId)
+        }, `Produto "${payload.name}" criado.`)
       }
     } else {
       const { error: err } = await supabase.from('products').update(payload).eq('id', id)
@@ -145,6 +159,20 @@ export default function ProductEditor() {
       if (err) {
         setError(err.message)
         return
+      }
+      if (previousRow) {
+        const restore = {
+          name: previousRow.name,
+          description: previousRow.description,
+          category: previousRow.category,
+          tab: previousRow.tab,
+          published: previousRow.published,
+          images: previousRow.images,
+          image: previousRow.image,
+        }
+        pushUndo(async () => {
+          await supabase.from('products').update(restore).eq('id', id)
+        }, `Alterações em "${previousRow.name}" salvas.`)
       }
     }
 

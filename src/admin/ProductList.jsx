@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isSupabaseConfigured, supabase } from '../lib/supabase.js'
 import { PRODUCTS } from '../data.js'
+import { pushUndo } from './undo.js'
 import './admin.css'
 
 const CATEGORIES = Array.from(new Set(PRODUCTS.map((product) => product.group))).sort()
@@ -62,10 +63,11 @@ export default function ProductList() {
   )
 
   const togglePublish = async (product) => {
+    const previous = product.published
     setBusy(product.id)
     const { error: err } = await supabase
       .from('products')
-      .update({ published: !product.published })
+      .update({ published: !previous })
       .eq('id', product.id)
     setBusy(null)
     if (err) {
@@ -73,10 +75,14 @@ export default function ProductList() {
       return
     }
     await load()
+    pushUndo(async () => {
+      await supabase.from('products').update({ published: previous }).eq('id', product.id)
+      await load()
+    }, `Produto "${product.name}" ${previous ? 'despublicado' : 'publicado'}.`)
   }
 
   const remove = async (product) => {
-    if (!window.confirm(`Excluir "${product.name}"? Esta ação não pode ser desfeita.`)) return
+    if (!window.confirm(`Excluir "${product.name}"? Você poderá desfazer logo em seguida.`)) return
     setBusy(product.id)
     const { error: err } = await supabase.from('products').delete().eq('id', product.id)
     setBusy(null)
@@ -85,6 +91,12 @@ export default function ProductList() {
       return
     }
     await load()
+    const row = { ...product }
+    delete row.updated_at
+    pushUndo(async () => {
+      await supabase.from('products').insert(row)
+      await load()
+    }, `Produto "${product.name}" excluído.`)
   }
 
   return (

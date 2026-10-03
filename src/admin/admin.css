@@ -423,6 +423,41 @@
   color: var(--muted-foreground);
 }
 
+.admin-undo {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: min(560px, calc(100% - 32px));
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.8);
+  font-size: 0.82rem;
+}
+
+.admin-undo span {
+  color: var(--foreground);
+}
+
+.admin-undo .btn {
+  flex: none;
+  border-color: color-mix(in oklab, var(--primary) 60%, var(--border));
+  color: var(--primary);
+  background: transparent;
+  font-weight: 800;
+}
+
+.admin-undo .btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
 .admin-switch {
   display: inline-flex;
   align-items: center;
