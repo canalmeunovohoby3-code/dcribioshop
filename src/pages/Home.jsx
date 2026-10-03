@@ -540,6 +540,7 @@ export default function Home() {
             <Link to="/projetos">Projetos Realizados</Link>
             <Link to="/quem-somos">Sobre nós</Link>
             <button onClick={() => openQuote()}>Orçamentos</button>
+            <Link to="/admin">Painel</Link>
             <button>Política de Privacidade</button>
             <button>Redes Sociais</button>
           </nav>
