@@ -187,7 +187,11 @@ export default function ProductList() {
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={6} style={{ color: 'var(--muted-foreground)' }}>
-                      Nenhum produto encontrado.
+                      {products.length === 0
+                        ? 'Nenhum produto cadastrado. Rode o SQL de seed (0002) ou crie um novo produto.'
+                        : tab === 'maquinas'
+                          ? 'Nenhum produto cadastrado na aba "Máquinas e Equipamentos". No site esta aba mostra a galeria de máquinas adesivadas; se você criar um produto com esta aba, ele também aparece lá.'
+                          : 'Nenhum produto encontrado com os filtros atuais.'}
                     </td>
                   </tr>
                 )}

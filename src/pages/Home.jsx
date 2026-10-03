@@ -239,7 +239,46 @@ export default function Home() {
             ))}
           </div>
         )}
-        {activeTab === 'maquinas' ? (
+        {tabProducts.length > 0 ? (
+          <div className="catalog-sections">
+            {sections.map((section, index) => (
+              <section
+                className="catalog-category"
+                key={section.category}
+                aria-labelledby={`catalog-${activeTab}-${index}`}
+              >
+                <h3 className="catalog-category-title" id={`catalog-${activeTab}-${index}`}>
+                  {section.category}
+                </h3>
+                <div className="product-grid catalog">
+                  {section.products.map((product) => (
+                    <ProductCard
+                      key={product.id || product.name + product.image}
+                      title={product.name}
+                      image={product.image}
+                      slug={product.slug}
+                      onQuote={openQuote}
+                      catalog
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : activeTab !== 'maquinas' ? (
+          <div className="product-grid">
+            {GROUPS[activeTab].map((label, index) => (
+              <ProductCard
+                key={`${activeTab}-${label}`}
+                title={label}
+                image={PRODUCT_LINE_IMAGES[index] ?? PRODUCT_LINE_IMAGES[0]}
+                onQuote={openQuote}
+              />
+            ))}
+          </div>
+        ) : null}
+
+        {activeTab === 'maquinas' && (
           <section className="machine-projects" aria-labelledby="machine-projects-title">
             <h3 className="catalog-category-title" id="machine-projects-title">
               Máquinas que já adesivamos
@@ -274,43 +313,6 @@ export default function Home() {
               <ChevronRight size={18} />
             </ActionButton>
           </section>
-        ) : tabProducts.length > 0 ? (
-          <div className="catalog-sections">
-            {sections.map((section, index) => (
-              <section
-                className="catalog-category"
-                key={section.category}
-                aria-labelledby={`catalog-${activeTab}-${index}`}
-              >
-                <h3 className="catalog-category-title" id={`catalog-${activeTab}-${index}`}>
-                  {section.category}
-                </h3>
-                <div className="product-grid catalog">
-                  {section.products.map((product) => (
-                    <ProductCard
-                      key={product.id || product.name + product.image}
-                      title={product.name}
-                      image={product.image}
-                      slug={product.slug}
-                      onQuote={openQuote}
-                      catalog
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        ) : (
-          <div className="product-grid">
-            {GROUPS[activeTab].map((label, index) => (
-              <ProductCard
-                key={`${activeTab}-${label}`}
-                title={label}
-                image={PRODUCT_LINE_IMAGES[index] ?? PRODUCT_LINE_IMAGES[0]}
-                onQuote={openQuote}
-              />
-            ))}
-          </div>
         )}
       </section>
 

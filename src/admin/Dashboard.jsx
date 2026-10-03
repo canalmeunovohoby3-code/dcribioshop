@@ -132,12 +132,25 @@ export default function Dashboard() {
     }
   }, [fromISO, toISO])
 
+  const clearMetrics = async () => {
+    if (!isSupabaseConfigured || !supabase) return
+    if (!window.confirm('Apagar TODAS as métricas registradas? Esta ação não pode ser desfeita.')) return
+    const { error: err } = await supabase.from('events').delete().gte('id', 0)
+    if (err) {
+      setError(err.message)
+      return
+    }
+    setError('')
+    setEvents([])
+  }
+
   const stats = useMemo(() => {
     const pageViews = events.filter((e) => e.event_type === 'page_view')
     const humans = pageViews.filter((e) => e.classification === 'human').length
     const bots = pageViews.filter((e) => e.classification === 'bot').length
     const unknown = pageViews.filter((e) => e.classification === 'unknown').length
-    const totalVisits = pageViews.length
+    // Visitas não contam bots/crawlers (que inflavam o número com acessos automatizados).
+    const totalVisits = pageViews.filter((e) => e.classification !== 'bot').length
     const whatsappClicks = events.filter((e) => e.event_type === 'whatsapp_click').length
     const cartAdds = events.filter((e) => e.event_type === 'cart_add')
     const cartWhatsapp = events.filter((e) => e.event_type === 'cart_whatsapp')
@@ -180,12 +193,14 @@ export default function Dashboard() {
     })()
 
     const days = enumerateDays(fromISO, toISO)
-    const byDay = (type) => {
+    const byDay = (type, predicate) => {
       const map = new Map()
-      events.filter((e) => e.event_type === type).forEach((e) => {
-        const key = (e.created_at || '').slice(0, 10)
-        map.set(key, (map.get(key) || 0) + 1)
-      })
+      events
+        .filter((e) => e.event_type === type && (!predicate || predicate(e)))
+        .forEach((e) => {
+          const key = (e.created_at || '').slice(0, 10)
+          map.set(key, (map.get(key) || 0) + 1)
+        })
       return days.map((date) => ({
         date,
         label: date.slice(8, 10),
@@ -208,7 +223,7 @@ export default function Dashboard() {
       browsers: countBy(pageViews, 'browser'),
       topSelected,
       topWhatsapp,
-      visitsSeries: byDay('page_view'),
+      visitsSeries: byDay('page_view', (e) => e.classification !== 'bot'),
       clickSeries: byDay('whatsapp_click'),
     }
   }, [events, fromISO, toISO])
@@ -240,6 +255,9 @@ export default function Dashboard() {
               <input className="admin-input" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} style={{ width: 'auto' }} />
             </>
           )}
+          <button className="btn btn-danger" type="button" onClick={clearMetrics}>
+            Limpar métricas
+          </button>
         </div>
       </div>
 
@@ -250,7 +268,7 @@ export default function Dashboard() {
         <div className="admin-card">
           <span>Visitas</span>
           <strong>{stats.totalVisits}</strong>
-          <small>páginas carregadas</small>
+          <small>sem bots/crawlers</small>
         </div>
         <div className="admin-card">
           <span>Visitantes humanos</span>

@@ -28,8 +28,11 @@ function Shell() {
   }, [])
 
   useEffect(() => {
-    if (!isAdmin) trackPageView(location.pathname)
-  }, [location.pathname, isAdmin])
+    // Conta 1 visita por carregamento da página (não por navegação interna),
+    // evitando inflar o contador com trocas de rota dentro do site.
+    if (!window.location.pathname.startsWith('/admin')) trackPageView(window.location.pathname)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const ready = revealed || isAdmin
 

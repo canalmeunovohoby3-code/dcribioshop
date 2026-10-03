@@ -102,6 +102,12 @@ create policy events_admin_read on public.events
   for select to authenticated
   using (true);
 
+-- Eventos: admin autenticado pode apagar métricas (botão "Limpar métricas")
+drop policy if exists events_admin_delete on public.events;
+create policy events_admin_delete on public.events
+  for delete to authenticated
+  using (true);
+
 -- ------------------------------------------------------------
 -- Storage: bucket público de imagens dos produtos
 -- ------------------------------------------------------------
