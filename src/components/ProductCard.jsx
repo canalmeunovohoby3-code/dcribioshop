@@ -2,12 +2,12 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { productSlug } from '../lib/slug.js'
 
-export default function ProductCard({ title, image, onQuote, catalog = false }) {
+export default function ProductCard({ title, image, slug, onQuote, catalog = false }) {
   const navigate = useNavigate()
 
   const handle = () => {
     if (catalog) {
-      navigate(`/produto/${productSlug({ name: title, image })}`)
+      navigate(`/produto/${slug || productSlug({ name: title, image })}`)
     } else {
       onQuote(title)
     }

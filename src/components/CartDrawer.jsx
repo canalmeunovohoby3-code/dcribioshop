@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Minus, Plus, Send, ShoppingCart, Trash2, X } from 'lucide-react'
 import { cart, useCart } from '../lib/cart.js'
 import { SITE } from '../data.js'
+import { trackCartWhatsapp, trackWhatsappClick } from '../lib/metrics.js'
 
 export default function CartDrawer({ open, onClose }) {
   const items = useCart()
@@ -12,6 +13,8 @@ export default function CartDrawer({ open, onClose }) {
       .map((item) => `• ${item.qty}x ${item.name}`)
       .join('\n')}${name.trim() ? `\n\nNome: ${name.trim()}` : ''}`
     window.open(`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer')
+    trackWhatsappClick('carrinho')
+    trackCartWhatsapp(items)
   }
 
   return (

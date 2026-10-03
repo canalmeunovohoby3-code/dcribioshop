@@ -1,14 +1,19 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, MessageCircle } from 'lucide-react'
-import { LOGO, PRODUCTS, SITE } from '../data.js'
+import { LOGO, SITE } from '../data.js'
 import { productSlug } from '../lib/slug.js'
-
-const CHIPS = ['Todos', ...Array.from(new Set(PRODUCTS.map((product) => product.group)))]
+import { useProducts } from '../lib/products.jsx'
+import { trackWhatsappClick } from '../lib/metrics.js'
 
 export default function Projetos() {
+  const { products } = useProducts()
   const [active, setActive] = useState('Todos')
-  const filtered = PRODUCTS.filter((product) => active === 'Todos' || product.group === active)
+  const chips = useMemo(
+    () => ['Todos', ...Array.from(new Set(products.map((product) => product.group)))],
+    [products],
+  )
+  const filtered = products.filter((product) => active === 'Todos' || product.group === active)
 
   return (
     <main className="site-shell projects-page">
@@ -21,6 +26,7 @@ export default function Projetos() {
           href={`https://wa.me/${SITE.whatsapp}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackWhatsappClick('projetos-header')}
         >
           <MessageCircle size={18} />
           <span>Fale no WhatsApp</span>
@@ -40,7 +46,7 @@ export default function Projetos() {
           Personalizações que já saíram da nossa produção — cada foto é um trabalho entregue.
         </p>
         <div className="group-chips projects-chips">
-          {CHIPS.map((chip) => (
+          {chips.map((chip) => (
             <button type="button" key={chip} className={chip === active ? 'active' : ''} onClick={() => setActive(chip)}>
               {chip}
             </button>
@@ -70,6 +76,7 @@ export default function Projetos() {
             href={`https://wa.me/${SITE.whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackWhatsappClick('projetos-cta')}
           >
             <MessageCircle size={18} />
             SOLICITAR ORÇAMENTO

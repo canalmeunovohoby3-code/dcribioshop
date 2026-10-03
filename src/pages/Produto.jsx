@@ -3,26 +3,34 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, MessageCircle, Minus, Plus, ShoppingCart } from 'lucide-react'
 import CartButton from '../components/CartButton.jsx'
 import CartDrawer from '../components/CartDrawer.jsx'
-import { LOGO, PRODUCTS, SITE } from '../data.js'
+import { LOGO, SITE } from '../data.js'
 import { cart } from '../lib/cart.js'
-import { productSlug } from '../lib/slug.js'
+import { useProducts } from '../lib/products.jsx'
+import { trackCartAdd, trackWhatsappClick } from '../lib/metrics.js'
+
+const DEFAULT_DESCRIPTION =
+  'Produto personalizado com a sua marca, com qualidade e acabamento profissional. Envio para todo o Brasil.'
 
 export default function Produto() {
   const { slug } = useParams()
-  const product = PRODUCTS.find((item) => productSlug(item) === slug)
+  const { products } = useProducts()
+  const product = products.find((item) => item.slug === slug)
 
-  const [activeImage, setActiveImage] = useState(product ? product.image : '')
+  const [activeImage, setActiveImage] = useState('')
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
 
-  const images = product ? [product.image] : []
+  const images = product ? (product.images && product.images.length ? product.images : [product.image]) : []
+  const currentImage = activeImage && images.includes(activeImage) ? activeImage : images[0] || ''
   const related = product
-    ? PRODUCTS.filter((item) => item.group === product.group && item.image !== product.image).slice(0, 8)
+    ? products.filter((item) => item.group === product.group && item.slug !== product.slug).slice(0, 8)
     : []
 
   const handleAdd = () => {
-    cart.add({ slug: productSlug(product), name: product.name, image: product.image }, qty)
+    if (!product) return
+    cart.add({ slug: product.slug, name: product.name, image: product.image }, qty)
+    trackCartAdd(product, qty)
     setAdded(true)
     window.setTimeout(() => setAdded(false), 1600)
   }
@@ -57,13 +65,13 @@ export default function Produto() {
           <section className="pd-grid">
             <div className="pd-gallery">
               <div className="pd-main">
-                <img src={activeImage} alt={product.name} />
+                <img src={currentImage} alt={product.name} />
               </div>
               {images.length > 1 && (
                 <div className="pd-thumbs">
                   {images.map((image) => (
                     <button
-                      className={image === activeImage ? 'active' : ''}
+                      className={image === currentImage ? 'active' : ''}
                       onClick={() => setActiveImage(image)}
                       aria-label="Ver foto"
                       key={image}
@@ -77,9 +85,7 @@ export default function Produto() {
             <div className="pd-info">
               <span className="eyebrow">{product.group}</span>
               <h1>{product.name}</h1>
-              <p>
-                Produto personalizado com a sua marca, com qualidade e acabamento profissional. Envio para todo o Brasil.
-              </p>
+              <p>{product.description || DEFAULT_DESCRIPTION}</p>
               <div className="pd-qty">
                 <span>Quantidade</span>
                 <div className="qty">
@@ -111,7 +117,13 @@ export default function Produto() {
                   </>
                 )}
               </button>
-              <a className="pd-wa" href={waLink} target="_blank" rel="noopener noreferrer">
+              <a
+                className="pd-wa"
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackWhatsappClick(`produto:${product.name}`)}
+              >
                 <MessageCircle size={18} />
                 Falar sobre este produto no WhatsApp
               </a>
@@ -125,11 +137,7 @@ export default function Produto() {
               </h2>
               <div className="product-grid catalog">
                 {related.map((item) => (
-                  <Link
-                    to={`/produto/${productSlug(item)}`}
-                    className="product-card"
-                    key={item.image}
-                  >
+                  <Link to={`/produto/${item.slug}`} className="product-card" key={item.slug || item.image}>
                     <img src={item.image} alt={item.name} loading="lazy" />
                     <div className="product-info">
                       <strong>{item.name}</strong>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Building2, Camera, Factory, MessageCircle, Palette, Truck } from 'lucide-react'
 import { Youtube } from '../components/icons.jsx'
 import { FACTORY_IMAGE, LOGO, SITE, VIDEO } from '../data.js'
+import { trackWhatsappClick } from '../lib/metrics.js'
 
 const STATS = [
   { icon: Building2, value: '+1.500', label: 'Empresas atendidas' },
@@ -29,6 +30,7 @@ export default function QuemSomos() {
           href={`https://wa.me/${SITE.whatsapp}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackWhatsappClick('quem-somos-header')}
         >
           <MessageCircle size={18} />
           <span>Fale no WhatsApp</span>
@@ -97,6 +99,7 @@ export default function QuemSomos() {
               href={`https://wa.me/${SITE.whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackWhatsappClick('quem-somos-fabrica')}
             >
               <MessageCircle size={18} />
               SOLICITAR ORÇAMENTO

@@ -17,6 +17,8 @@ import {
   X,
 } from 'lucide-react'
 import { Instagram } from '../components/icons.jsx'
+import { useProducts } from '../lib/products.jsx'
+import { trackWhatsappClick } from '../lib/metrics.js'
 import '../sections.css'
 import Brand from '../components/Brand.jsx'
 import ActionButton from '../components/ActionButton.jsx'
@@ -33,7 +35,6 @@ import {
   MACHINES,
   MENU,
   PRODUCT_LINE_IMAGES,
-  PRODUCTS,
   SITE,
   TESTIMONIALS,
   VIDEO,
@@ -66,8 +67,9 @@ export default function Home() {
   const [bannerIndex, setBannerIndex] = useState(0)
   const [bannerPaused, setBannerPaused] = useState(false)
   const location = useLocation()
+  const { products } = useProducts()
 
-  const tabProducts = PRODUCTS.filter((product) => product.tab === activeTab)
+  const tabProducts = products.filter((product) => product.tab === activeTab)
   const groups = ['Todos', ...Array.from(new Set(tabProducts.map((product) => product.group)))]
   const filtered = tabProducts.filter((product) => activeGroup === 'Todos' || product.group === activeGroup)
   const sections = Array.from(new Set(filtered.map((product) => product.group))).map((category) => ({
@@ -284,9 +286,10 @@ export default function Home() {
                 <div className="product-grid catalog">
                   {section.products.map((product) => (
                     <ProductCard
-                      key={product.name + product.image}
+                      key={product.id || product.name + product.image}
                       title={product.name}
                       image={product.image}
+                      slug={product.slug}
                       onQuote={openQuote}
                       catalog
                     />
@@ -485,7 +488,13 @@ export default function Home() {
           </div>
           <div className="footer-contact">
             <strong>Contato</strong>
-            <a className="contact-line" href={`https://wa.me/${SITE.whatsapp}`} target="_blank" rel="noopener noreferrer">
+            <a
+              className="contact-line"
+              href={`https://wa.me/${SITE.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackWhatsappClick('rodape')}
+            >
               <MessageCircle size={16} />
               <span>WhatsApp: {SITE.whatsappDisplay}</span>
             </a>

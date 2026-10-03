@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Send, X } from 'lucide-react'
 import { SITE } from '../data.js'
+import { trackWhatsappClick } from '../lib/metrics.js'
 
 const FIELDS = [
   ['name', 'Nome', 'Seu nome', 'text'],
@@ -57,6 +58,7 @@ export default function QuoteModal({ open, product, onClose }) {
       data.quantity
     }\nMensagem: ${data.message || 'Sem observações'}`
     window.open(`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer')
+    trackWhatsappClick('orcamento')
     window.setTimeout(() => setSubmitted(false), 700)
   }
 

@@ -1,10 +1,10 @@
 export function productSlug(product) {
-  return slugify(product.name, product.image)
+  return product?.slug || slugify(product?.name || '', product?.image || '')
 }
 
 export function slugify(name, image) {
-  const digits = (image.match(/\/(\d+)_/) || [])[1] ?? ''
-  const base = name
+  const digits = ((image || '').match(/\/(\d+)_/) || [])[1] ?? ''
+  const base = (name || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
